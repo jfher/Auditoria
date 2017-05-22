@@ -1,0 +1,151 @@
+<%= render :partial => 'static_pages/notice_panel' %>
+
+<h2>Ver Denuncia</h2>
+
+<div class="jumbotron">
+  <table class="table">
+      <tr>
+        <%if   @complain.crime_id!=nil%>
+          <td><strong>delito</strong></td>
+        <td><%= @complain.crime.name %></td>
+        <%end%>
+        <%if   @complain.contravertion_id!=nil%>
+          <td><strong>contravencion</strong></td>
+        <td><%= @complain.contravertion.name %></td>
+        <%end%>
+        </tr>
+        <tr>
+        <%if @complainant!=nil%>
+        <%if   @complainant.name!=nil%>
+        <td><strong>denunciante</strong></td>
+        <td><%= @complainant.name %></td>
+        <%end%>
+        <%if   @complainant.last_name!=nil%>
+        <td><strong>apellido</strong></td>
+        <td><%= @complainant.last_name %></td>
+        <%end%>
+        <%if   @complainant.ci!=nil%>
+        <td><strong>ci</strong></td>
+        <td><%= @complainant.ci %></td>
+        <%end%>
+         <%end%>
+        </tr>
+      <tr>
+        <%if  @complain.description!=nil%>
+          <td><strong>Descripcion</strong></td>
+          <td><%= @complain.description %></td>
+          <%end%>
+          <%if   @complain.observations!=nil%>
+            <td><strong>observaciones</strong></td>
+          <td><%= @complain.observations %></td>
+          <%end%>
+      </tr>
+       <tr>
+        <td><strong>Zona</strong></td>
+        <td><%= @complain.zone %></td>
+      </tr>
+
+  </table>  <hr>
+  <div class="field"   <% if @observationsAux=="true" || params[:observationsAux]=="true"%>style ="display:block"  <%else%> style ="display:none" <%end%>>
+    <%if ( current_user.role==2 || current_user.role==1 )&& ( @observationsAux=="true" || params[:observationsAux]=="true")%>
+    <label>Observaciones <i class="fa fa-asterisk"></i></label><br>
+
+    <%= form_for(@complain) do|f| %>
+    <%= f.text_area :observations, :class => 'form-control small-text-area'  %>
+    <div class="actions center">
+      <%= f.submit 'Registrar observaciones', :class => 'btn btn-default'  %>
+    </div>
+    <%end%>
+  <%end%>
+  </div><br>
+
+  <div class="field"   <% if @caseReportAux=="true" || params[:caseReport]=="true"%>style ="display:block"  <%else%> style ="display:none" <%end%>>
+    <%if ( current_user.role==1  && @complain.caseReport==nil)%>
+
+    <label>Reporte del caso </label><br>
+
+
+ <%= form_for(@complain) do|f| %>
+  <%= f.hidden_field :complain_id, :value => @complain.id %>
+
+    <div class="field">
+        <%= f.radio_button  :caseReport, 'yes', :checked=> if (@caseReportAux=="true" || params[:caseReport]=="true" )then true  else false end,:id=>'caseReportA'%>
+      <label ><span></span></label><sup>(marcar si el caso fue positivo  )</sup>
+    </div>
+    <div class="field">
+      <%= f.radio_button :caseReport, 'no' , :checked=>false,:id=>'caseReportA2'%>
+
+      <label ><span></span></label><sup>(marcar si el caso fue negativo  )</sup>
+    </div><br>
+
+      <div class="field" id="case_report"  <% if (@caseReportAux=="true" || params[:caseReport]=="true" )
+ %> style ="display:block"  <%else%> style ="display:none" <%end%> >
+         <label>Protagonistas <i class="fa fa-asterisk"></i></label>
+            <%= f.text_area( :protagonists,  :value => if  params[:protagonists] != ""
+       params[:protagonists]  else ""
+    end ,  :class => 'form-control small-text-area' ) %><br>
+         <label>Breve Informe <i class="fa fa-asterisk"></i></label>
+         <%= f.text_area( :shortReport,  :value => if  params[:shortReport] != ""
+       params[:shortReport]  else ""
+    end ,:class => 'form-control small-text-area' ) %><br>
+        <label>Remision del caso<i class="fa fa-asterisk"></i></label>
+         <%= f.text_area( :derivationCase, :value => if  params[:derivationCase] != ""
+       params[:derivationCase]  else ""
+    end , :class => 'form-control small-text-area' ) %><br>
+      </div><br>
+
+
+
+    <div class="actions center">
+      <%= f.submit 'Registrar reporte del caso', :class => 'btn btn-default'  %>
+    </div>
+    <%end%>
+  <%end%>
+
+
+    </div><br>
+    <div class="field" <%if @asign_patrol_unit=="true"%>style ="display:block"<%else%>style="display:none" <%end%>>
+    <%if @patrol_units!=nil%>
+        <%= form_for(@complain, :url => { :action => "patrol_unit_asign" }, :html => { :method => :put } ) do |f| %>
+                  <%= f.hidden_field :complain_id, :value => @complain.id %>
+                 <%= text_field_tag :patrolUnitAux,nil, class: 'awesomplete', data: { list:  @patrol_units.map{|v| v.to_s.encode("UTF-8").gsub!(/[^a-z0-9.\s]/i, '')}} %>
+
+                <%= f.submit 'Asignar', :class => 'btn btn-default'%> </td>
+            <%end%>
+  <%end%>
+    </div>
+ <div style='width: 800px;'> 
+    <strong>Ubicacion:</strong>
+    <div id="map" style='width: 800px; height: 1000px;'></div>
+  </div>
+</div>
+
+  <script type="text/javascript">
+    $(document).ready(function(){
+        gmap_show(<%== @complain.to_json %>);
+console.log("gggg");
+    var caseReport= document.getElementById('caseReportA');
+$("input[type=radio]").change(function() {
+    console.log("gggg");
+        if($(this).attr('id') == 'caseReportA') {
+             $('#case_report').show();
+        }else {
+             $('#case_report').hide();
+        }
+    })
+});
+
+</script>
+
+<div class="row">
+  <div class="col-xs-6 col-sm-3  "></div>
+    <% if current_user.role==1  %>
+      <div class="col-xs-6 col-sm-3 ">
+            <%= link_to 'Editar', edit_complain_path(@complain), class: 'btn btn-primary' %>
+      </div>
+    <% end %>
+
+   <div class="col-xs-6 col-sm-3  ">
+    <%= link_to 'Atras', complains_path, class: 'btn btn-default' %>
+  </div>
+</div>

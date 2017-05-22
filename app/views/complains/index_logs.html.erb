@@ -1,0 +1,47 @@
+<% if current_user.role != 1 %>
+    <h1> No se tiene permiso para ver esta pagina </h1>
+<% else %>
+    <%= render :partial => 'static_pages/notice_panel' %>
+
+   
+
+    <h1>Lista de actividades realizadas por usuarios dentro el sistema</h1>
+      <div class="col-md-6 col-md-offset-3">
+      <div class="digg_pagination">
+        <%= will_paginate @activities,  :previous_label => 'Atras', :next_label => 'Siguiente', :container => true ,renderer: BootstrapPagination::Rails%>
+      </div>
+    </div><br>
+    <table class="table table-striped table-hover">
+      <thead>
+      <tr>
+        <th>Nombre de usuario</th>
+          <th>Apellido de usuario</th>
+        <th>Mensaje</th>
+        <th>Fecha</th>
+        <th >Controlador</th>
+        <th>Accion</th>
+      </tr>
+      </thead>
+
+      <tbody class="cream-pixels">
+      <% @activities.each do |activity| %>
+          <tr>
+
+            <td><%if Person.where("user_id = ?",activity.user_id).pluck(:first_name)[0] !=nil%><%=  Person.where("user_id = ?",activity.user_id).pluck(:first_name)[0].gsub(/[^a-z0-9.\s]/i, '')  %><%else%>Usuario administrador<%end%></td>
+              <td><%if Person.where("user_id = ?",activity.user_id).pluck(:last_name)[0]!=nil%><%=  Person.where("user_id = ?",activity.user_id).pluck(:last_name)[0].gsub(/[^a-z0-9.\s]/i, '')  %><%else%> Usuario administrador<%end%> </td>
+            <td><%= activity.note %></td>
+            <td><%= activity.created_at%></td>
+            <td><%=activity.controller %></td>
+            <td><%=activity.action%></td>
+          </tr>
+      <% end %>
+      </tbody>
+    </table>
+
+    <br>
+    <div class="col-md-6 col-md-offset-3">
+      <div class="digg_pagination">
+        <%= will_paginate @activities,  :previous_label => 'Atras', :next_label => 'Siguiente', :container => true ,renderer: BootstrapPagination::Rails%>
+      </div>
+    </div><br>
+<% end %>
